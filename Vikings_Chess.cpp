@@ -1,26 +1,22 @@
 
 
 #include <iostream>
-#include <iomanip>
+#include "Constants.h"
+#include "StringUtils.h"
+
+
 using namespace std;
-
-
-const int BOARD_SIZE = 11; // Standard size of a Viking Chess board
-const char EMPTY = '.';    // Empty cell
-const char KING = 'K';     // King piece
-const char ATTACKER = 'A'; // Attacker piece
-const char DEFENDER = 'D'; // Defender piece
-const char EDGE = 'X';
-
 
 void runGame();
 void startGame();
 void quitGame();
-char** initializeBoard();
-void displayBoard(char** board);
-void placeAttackers(char** board);
-void placeDefenders(char** board);
+char** initializeBoard(int boardSize);
+void displayBoard(char** board, int boardSize);
+void placeAttackers(char** board, int boardSize);
+void placeDefenders(char** board, int boardSize);
+void doMoves(char** board);
 
+bool isGameEnded(char** board);
 
 
 
@@ -28,103 +24,181 @@ int main()
 {
 	runGame();
 
-    char** board = initializeBoard();
-    displayBoard(board);
 }
 
 void startGame() {
-	cout << "Enter rows and cols of your board: ";
-	int rows;
-	cin >> rows;
+
+	int boardSize;
+	do {
+		cout << "Enter valid board size (9, 11 or 13): ";
+		cin >> boardSize;
+	} while (boardSize != 9 && boardSize != 11 && boardSize != 13);
+
+	char** board = initializeBoard(boardSize);
+	displayBoard(board, boardSize);
+
+	char* input = nullptr;
+	int playerMove = 0;
+
+	while (true) {
+
+		if (playerMove % 2 == 0) {
+			cout << "First player move!" << endl;
+		}
+		else {
+			cout << "Second player move!" << endl;
+
+		}
+
+		cin.clear();
+		cin.sync();
+		cin.ignore();
+
+		cin.getline(input, INPUT_MAX_SIZE);
+
+		int wordsCount = 0;
+
+
+		if (input[0] == '2') {
+
+			const char* output = (playerMove % 2) != 0 ? "First" : "Second";
+
+			cout << output << " player wins the game" << endl;
+			break;
+		}
+		else if (isGameEnded(board)) {
+			cout << "Game ended" << endl;
+			break;
+		}
+
+
+		char** result = splitStringBySpace(input, wordsCount);
+
+		for (int i = 0; i < wordsCount; i++) {
+			cout << result[i] << endl;
+		}
+
+
+		playerMove++;
+
+
+	}
+
+	
+
+	delete[] input;
+
+
 
 }
 
-void placeAttackers(char** board) {
+void placeAttackers(char** board, int boardSize) {
 
-    int center = BOARD_SIZE / 2;
+	int center = boardSize / 2;
 
-    for (int i = 3; i <= 7; ++i) {
-        board[0][i] = ATTACKER;
-        board[BOARD_SIZE - 1][i] = ATTACKER;
-        board[i][0] = ATTACKER;
-        board[i][BOARD_SIZE - 1] = ATTACKER;
-    }
+	for (size_t i = 3; i < boardSize - 3; i++) {
+		board[0][i] = ATTACKER;
+		board[boardSize - 1][i] = ATTACKER;
+		board[i][0] = ATTACKER;
+		board[i][boardSize - 1] = ATTACKER;
+	}
 
-    board[1][center] = ATTACKER;
-    board[BOARD_SIZE - 2][center] = ATTACKER;
-    board[center][BOARD_SIZE - 2] = ATTACKER;
-    board[center][1] = ATTACKER;
+	board[1][center] = ATTACKER;
+	board[boardSize - 2][center] = ATTACKER;
+	board[center][boardSize - 2] = ATTACKER;
+	board[center][1] = ATTACKER;
 
 
 
 }
 
-void placeDefenders(char** board) {
-    int center = BOARD_SIZE / 2;
-    board[center - 1][center] = DEFENDER;
-    board[center + 1][center] = DEFENDER;
-    board[center][center - 1] = DEFENDER;
-    board[center][center + 1] = DEFENDER;
+void placeDefenders(char** board, int boardSize) {
+	int center = boardSize / 2;
+	board[center - 1][center] = DEFENDER;
+	board[center + 1][center] = DEFENDER;
+	board[center][center - 1] = DEFENDER;
+	board[center][center + 1] = DEFENDER;
 
-    board[center - 2][center] = DEFENDER;
-    board[center + 2][center] = DEFENDER;
-    board[center][center - 2] = DEFENDER;
-    board[center][center + 2] = DEFENDER;
+	if (boardSize > 9) {
+		board[center - 2][center] = DEFENDER;
+		board[center + 2][center] = DEFENDER;
+		board[center][center - 2] = DEFENDER;
+		board[center][center + 2] = DEFENDER;
+	}
 
-    board[center - 1][center - 1] = DEFENDER;
-    board[center - 1][center + 1] = DEFENDER;
-    board[center + 1][center - 1] = DEFENDER;
-    board[center + 1][center + 1] = DEFENDER;
+
+	board[center - 1][center - 1] = DEFENDER;
+	board[center - 1][center + 1] = DEFENDER;
+	board[center + 1][center - 1] = DEFENDER;
+	board[center + 1][center + 1] = DEFENDER;
 }
 
-char** initializeBoard() {
-    char** board = new char* [BOARD_SIZE];
-    for (size_t i = 0; i < BOARD_SIZE; i++) {
-        board[i] = new char[BOARD_SIZE];
-        for (size_t j = 0; j < BOARD_SIZE; j++) {
-            board[i][j] = EMPTY;
-        }
-    }
+char** initializeBoard(int boardSize) {
+	char** board = new char* [boardSize];
+	for (size_t i = 0; i < boardSize; i++) {
+		board[i] = new char[boardSize];
+		for (size_t j = 0; j < boardSize; j++) {
+			board[i][j] = EMPTY;
+		}
+	}
 
-    int center = BOARD_SIZE / 2;
-    board[center][center] = KING;
+	int center = boardSize / 2;
+	board[center][center] = KING;
 
-    placeDefenders(board);
+	placeDefenders(board, boardSize);
 
-    placeAttackers(board);
+	placeAttackers(board, boardSize);
 
-    board[0][0] = EDGE;
-    board[0][BOARD_SIZE - 1] = EDGE;
-    board[BOARD_SIZE - 1][0] = EDGE;
-    board[BOARD_SIZE - 1][BOARD_SIZE - 1] = EDGE;
+	board[0][0] = EDGE;
+	board[0][boardSize - 1] = EDGE;
+	board[boardSize - 1][0] = EDGE;
+	board[boardSize - 1][boardSize - 1] = EDGE;
 
-    return board;
+	return board;
+}
+
+void doMoves(char** board) {
+
 }
 
 
-void displayBoard(char** board) {
-    for (size_t i = 0; i < BOARD_SIZE; i++) {
-        for (size_t j = 0; j < BOARD_SIZE; j++) {
-            std::cout << setw(2) << board[i][j];
-        }
-        std::cout << endl;
-    }
+void displayBoard(char** board, int boardSize) {
+	for (size_t i = 0; i < boardSize; i++) {
+		for (size_t j = 0; j < boardSize; j++) {
+			std::cout << "  " << board[i][j] ;
+		}
+
+		std::cout << " |" << i + 1 << endl;
+	}
+
+	for (size_t i = 0; i < boardSize; i++) {
+		cout << "___";
+	}
+	cout << endl;
+	for (size_t i = 0; i < boardSize; i++) {
+		cout << "  " << (char)(i + 'a') ;
+	}
+	cout << endl;
 }
 
 
 void quitGame() {
-	return; 
+	return;
 }
 
 void runGame() {
-	cout << "Choose your options: " << endl;
+	cout << "Welcome to Vikings Chess" << endl;
 	cout << "1. Start game" << endl;
 	cout << "2. Quit" << endl;
-
 	int option;
 
-	cout << "Enter your choice: ";
-	cin >> option;
+
+	do {
+		cout << "Enter your choice: ";
+		cin >> option;
+	} while (option != 1 && option != 2);
+
+	
 
 	//cout << option;
 
@@ -135,7 +209,10 @@ void runGame() {
 		quitGame();
 	}
 
+}
 
+bool isGameEnded(char** board) {
+	return false;
 }
 
 
