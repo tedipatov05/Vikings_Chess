@@ -15,6 +15,8 @@ void displayBoard(char** board, int boardSize);
 void placeAttackers(char** board, int boardSize);
 void placeDefenders(char** board, int boardSize);
 void doMoves(char** board);
+int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player);
+bool isInBoard(int row, int col, int boardSize);
 
 bool isGameEnded(char** board);
 
@@ -23,6 +25,31 @@ bool isGameEnded(char** board);
 int main()
 {
 	runGame();
+
+}
+
+void runGame() {
+	cout << "Welcome to Vikings Chess" << endl;
+	cout << "1. Start game" << endl;
+	cout << "2. Quit" << endl;
+	int option;
+
+
+	do {
+		cout << "Enter your choice: ";
+		cin >> option;
+	} while (option != 1 && option != 2);
+
+
+
+	//cout << option;
+
+	if (option == 1) {
+		startGame();
+	}
+	else {
+		quitGame();
+	}
 
 }
 
@@ -40,31 +67,34 @@ void startGame() {
 	char* input = nullptr;
 	int playerMove = 0;
 
+	int caughtAttackers = 0;
+	int caughtDefenders = 0;
+	
+	cin.ignore();
+
+
 	while (true) {
 
 		if (playerMove % 2 == 0) {
-			cout << "First player move!" << endl;
+			cout << "First player move! (Attackers)" << endl;
 		}
 		else {
-			cout << "Second player move!" << endl;
+			cout << "Second player move! (Defenders)" << endl;
 
 		}
 
 		cin.clear();
 		cin.sync();
-		cin.ignore();
+
+		input = new char[INPUT_MAX_SIZE];
 
 		cin.getline(input, INPUT_MAX_SIZE);
 
-		int wordsCount = 0;
 
 
-		if (input[0] == '2') {
+		if (areEqualStrings(input, EXIT_NUMBER)) {
 
-			const char* output = (playerMove % 2) != 0 ? "First" : "Second";
 
-			cout << output << " player wins the game" << endl;
-			break;
 		}
 		else if (isGameEnded(board)) {
 			cout << "Game ended" << endl;
@@ -72,21 +102,57 @@ void startGame() {
 		}
 
 
+
+		int wordsCount = 0;
+
 		char** result = splitStringBySpace(input, wordsCount);
 
-		for (int i = 0; i < wordsCount; i++) {
-			cout << result[i] << endl;
+
+		if (areEqualStrings(toLower(result[0]), MOVE_COMAND)) {
+			
+			int sourceRow = charToDigit(result[1]);
+			int sourceCol = charToDigit(result[2]);
+			int destinationRow = charToDigit(result[3]);
+			int destinationCol = charToDigit(result[4]);
+
+
+			int result = makeMove(sourceRow, sourceCol, destinationRow, destinationCol, board, boardSize, playerMove);
+			if (!result) {
+				cout << "Invalid move!" << endl;
+				continue;
+			}
+
+			displayBoard(board, boardSize);
+		}
+		else if (areEqualStrings(toLower(result[0]), INFO_COMAND)) {
+			cout << "Information" << endl;
+
+		}
+		else if (areEqualStrings(toLower(result[0]), QUIT_COMAND)) {
+			const char* output = (playerMove % 2) != 0 ? "First" : "Second";
+
+			cout << output << " player wins the game" << endl;
+			break;
+		}
+		else if (areEqualStrings(toLower(result[0]), HELP_COMMAND)) {
+			cout << "I am helping you" << endl;
+
+		}
+		else {
+			cout << "Invalid command!" << endl;
+			continue;
 		}
 
 
 		playerMove++;
 
+		delete[] input;
 
 	}
 
-	
 
-	delete[] input;
+
+
 
 
 
@@ -165,7 +231,7 @@ void doMoves(char** board) {
 void displayBoard(char** board, int boardSize) {
 	for (size_t i = 0; i < boardSize; i++) {
 		for (size_t j = 0; j < boardSize; j++) {
-			std::cout << "  " << board[i][j] ;
+			std::cout << "  " << board[i][j];
 		}
 
 		std::cout << " |" << i + 1 << endl;
@@ -176,7 +242,7 @@ void displayBoard(char** board, int boardSize) {
 	}
 	cout << endl;
 	for (size_t i = 0; i < boardSize; i++) {
-		cout << "  " << (char)(i + 'a') ;
+		cout << "  " << (char)(i + 'a');
 	}
 	cout << endl;
 }
@@ -186,32 +252,69 @@ void quitGame() {
 	return;
 }
 
-void runGame() {
-	cout << "Welcome to Vikings Chess" << endl;
-	cout << "1. Start game" << endl;
-	cout << "2. Quit" << endl;
-	int option;
+int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player) {
 
-
-	do {
-		cout << "Enter your choice: ";
-		cin >> option;
-	} while (option != 1 && option != 2);
-
-	
-
-	//cout << option;
-
-	if (option == 1) {
-		startGame();
+	if (!isInBoard(sourceRow, sourceCol, boardSize)) {
+		return 0;
 	}
-	else {
-		quitGame();
+	if (!isInBoard(destinationRow, destinationCol, boardSize)) {
+		return 0;
+	}
+	if (sourceRow != destinationRow && sourceCol != destinationCol) {
+		return 0;
 	}
 
+	sourceRow--;
+	sourceCol--;
+	destinationRow--;
+	destinationCol--;
+
+	if (player % 2 == 0 && board[sourceRow][sourceCol] != ATTACKER) {
+		return 0;
+	}
+
+	if (player % 2 == 1 && board[sourceRow][sourceCol] != DEFENDER && board[sourceRow][sourceCol] != KING) {
+		return 0;
+	}
+
+	if (sourceRow == destinationRow) {
+		int end = sourceCol < destinationCol ? destinationCol : sourceCol;
+		int start = sourceCol < destinationCol ? sourceCol + 1 : destinationCol + 1;
+		for (int col = start; col < end; col++) {
+			if (board[sourceRow][col] != EMPTY) {
+				return 0;
+			}
+		}
+	}
+	else if (sourceCol == destinationCol) {
+		int end = sourceRow < destinationRow ? destinationRow : sourceRow;
+		int start = sourceRow < destinationRow ? sourceRow + 1 : destinationRow + 1;
+		for (int row = start; row < end; row++) {
+			if (board[row][sourceCol] != EMPTY) {
+				return 0;
+			}
+		}
+	}
+
+	board[destinationRow][destinationCol] = board[sourceRow][sourceCol];
+	board[sourceRow][sourceCol] = EMPTY;
+
+	return 1;
 }
 
+bool isInBoard(int row, int col, int boardSize) {
+	row--;
+	col--;
+	if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) {
+		return false;
+	}
+	return true;
+}
+
+
+
 bool isGameEnded(char** board) {
+
 	return false;
 }
 
