@@ -105,15 +105,19 @@ void startGame() {
 
 		int wordsCount = 0;
 
-		char** result = splitStringBySpace(input, wordsCount);
+		char** splitWords = splitStringBySpace(input, wordsCount);
+
+		//char* cmd1 = result[0];
+
+		delete[] input;
 
 
-		if (areEqualStrings(toLower(result[0]), MOVE_COMAND)) {
+		if (areEqualStrings(toLower(splitWords[0]), MOVE_COMAND)) {
 			
-			int sourceRow = charToDigit(result[1]);
-			int sourceCol = charToDigit(result[2]);
-			int destinationRow = charToDigit(result[3]);
-			int destinationCol = charToDigit(result[4]);
+			int sourceRow = charToDigit(splitWords[1]);
+			int sourceCol = charToDigit(splitWords[2]);
+			int destinationRow = charToDigit(splitWords[3]);
+			int destinationCol = charToDigit(splitWords[4]);
 
 
 			int result = makeMove(sourceRow, sourceCol, destinationRow, destinationCol, board, boardSize, playerMove);
@@ -124,17 +128,17 @@ void startGame() {
 
 			displayBoard(board, boardSize);
 		}
-		else if (areEqualStrings(toLower(result[0]), INFO_COMAND)) {
+		else if (areEqualStrings(toLower(splitWords[0]), INFO_COMAND)) {
 			cout << "Information" << endl;
 
 		}
-		else if (areEqualStrings(toLower(result[0]), QUIT_COMAND)) {
+		else if (areEqualStrings(toLower(splitWords[0]), QUIT_COMAND)) {
 			const char* output = (playerMove % 2) != 0 ? "First" : "Second";
 
 			cout << output << " player wins the game" << endl;
 			break;
 		}
-		else if (areEqualStrings(toLower(result[0]), HELP_COMMAND)) {
+		else if (areEqualStrings(toLower(splitWords[0]), HELP_COMMAND)) {
 			cout << "I am helping you" << endl;
 
 		}
@@ -146,7 +150,6 @@ void startGame() {
 
 		playerMove++;
 
-		delete[] input;
 
 	}
 
@@ -265,9 +268,7 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 	}
 
 	sourceRow--;
-	sourceCol--;
 	destinationRow--;
-	destinationCol--;
 
 	if (player % 2 == 0 && board[sourceRow][sourceCol] != ATTACKER) {
 		return 0;
