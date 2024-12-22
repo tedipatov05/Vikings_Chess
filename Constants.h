@@ -8,6 +8,7 @@ const char KING = 'K';     // King piece
 const char ATTACKER = 'A'; // Attacker piece
 const char DEFENDER = 'D'; // Defender piece
 const char EDGE = 'X';     // Edge of the board
+const char THRONE = 'T';
 
 const char MOVE_COMAND[] = "move";
 const char INFO_COMAND[] = "info";

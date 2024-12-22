@@ -22,15 +22,15 @@ void copyString(char* dest, const char* src, size_t n) {
 char** splitStringBySpace(const char* str, int& wordCount) {
 	wordCount = 0;
 
-	// Calculate the number of words
+	
 	const char* ptr = str;
 	while (*ptr) {
-		// Skip leading spaces
+		
 		while (*ptr == ' ') {
 			++ptr;
 		}
 
-		// Count a word if there are non-space characters
+		
 		if (*ptr) {
 			++wordCount;
 			while (*ptr && *ptr != ' ') {
@@ -40,38 +40,38 @@ char** splitStringBySpace(const char* str, int& wordCount) {
 	}
 
 	if (wordCount == 0) {
-		return nullptr; // No words found
+		return nullptr; 
 	}
 
-	// Allocate memory for the result array (char**)
+
 	char** result = new char* [wordCount + 1];
 
-	// Extract words
-	ptr = str; // Reset pointer to the start of the string
+	
+	ptr = str; 
 	int index = 0;
 
 	while (*ptr) {
-		// Skip leading spaces
+		
 		while (*ptr == ' ') {
 			++ptr;
 		}
 
-		// Find the end of the current word
+		
 		const char* wordStart = ptr;
 		while (*ptr && *ptr != ' ') {
 			++ptr;
 		}
 
-		// Calculate word length
+	
 		size_t wordLength = ptr - wordStart;
 
-		// Allocate memory for the word and copy it
+		
 		if (wordLength > 0 && index < wordCount) {
-			result[index] = new char[wordLength + 1]; // +1 for null terminator
+			result[index] = new char[wordLength + 1]; 
 			for (size_t i = 0; i < wordLength; ++i) {
 				result[index][i] = wordStart[i];
 			}
-			result[index][wordLength] = '\0'; // Null-terminate the word
+			result[index][wordLength] = TERMINATE_SYMBOL; 
 			++index;
 		}
 	}
@@ -135,7 +135,7 @@ char toLowerChar(const char ch) {
 }
 
 char* toLower(const char* str) {
-	// Calculate the length of the input string
+	
 	size_t length = 0;
 	const char* temp = str;
 	while (*temp) {
@@ -143,10 +143,8 @@ char* toLower(const char* str) {
 		temp++;
 	}
 
-	// Allocate memory for the result string
+	
 	char* lowerStr = new char[length + 1];
-
-	// Convert each character to lowercase
 	const char* src = str;
 	char* dest = lowerStr;
 	while (*src) {
