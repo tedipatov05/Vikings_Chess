@@ -18,7 +18,9 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 bool isInBoard(int row, int col, int boardSize);
 void captureFigure(char** board, int lastRow, int lastCol, int& caughtAttackers, int& caughtDefenders, int boardSize);
 
-//bool isGameOver(char** board, int boardSize);
+bool isGameOver(char** board, int boardSize);
+bool isSurrounded(char** board, int boardSize, int x, int y, char target);
+bool isKingCaptured(char** board, int boardSize, int x, int y);
 
 
 
@@ -90,24 +92,9 @@ void startGame() {
 
 		cin.getline(input, INPUT_MAX_SIZE);
 
-
-
-		//if (areEqualStrings(input, EXIT_NUMBER)) {
-
-
-		//}
-		//else if (isGameEnded(board, boardSize)) {
-		//	cout << "Game ended" << endl;
-		//	break;
-		//}
-
-
-
 		int wordsCount = 0;
 
 		char** splitWords = splitStringBySpace(input, wordsCount);
-
-		//char* cmd1 = result[0];
 
 		delete[] input;
 
@@ -125,20 +112,23 @@ void startGame() {
 				cout << "Invalid move!" << endl;
 				continue;
 			}
+
+			char currentCh = board[destinationRow][destinationCol];
 			int directions[DIRECTIONS_ROWS][DIRECTIONS_COLS] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 			for (int i = 0; i < DIRECTIONS_ROWS; i++) {
 				int row = directions[i][0];
 				int col = directions[i][1];
-				captureFigure(board, destinationRow + row, destinationCol + col, caughtAttackers, caughtDefenders, boardSize);
 
+				captureFigure(board, destinationRow + row, destinationCol + col, caughtAttackers, caughtDefenders, boardSize);
 			}
 
-			/*captureFigure(board, destinationRow, destinationCol - 1, caughtAttackers, caughtDefenders, boardSize);
-			captureFigure(board, destinationRow + 1, destinationCol, caughtAttackers, caughtDefenders, boardSize);
-			captureFigure(board, destinationRow - 1, destinationCol, caughtAttackers, caughtDefenders, boardSize);
-			captureFigure(board, destinationRow, destinationCol + 1, caughtAttackers, caughtDefenders, boardSize);*/
+			int center = boardSize / 2;
+			if (board[center][center] != KING) {
+				board[center][center] = THRONE;
+			}
 
 			displayBoard(board, boardSize);
+
 			bool isOver = isGameOver(board, boardSize);
 			if (isOver) {
 				cout << endl;
@@ -148,6 +138,8 @@ void startGame() {
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), INFO_COMAND)) {
 			cout << "Information" << endl;
+			cout << "Captured attackers: " << caughtAttackers << endl;
+			cout << "Captured defenders: " << caughtDefenders << endl;
 
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), QUIT_COMAND)) {
@@ -290,34 +282,45 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 		int end = sourceCol < destinationCol ? destinationCol : sourceCol;
 		int start = sourceCol < destinationCol ? sourceCol + 1 : destinationCol + 1;
 		for (int col = start; col < end; col++) {
-			if (board[sourceRow][col] != EMPTY && board[sourceRow][sourceCol] != KING) {
+			if (board[sourceRow][sourceCol] == KING && board[sourceRow][col] == THRONE) {
+				continue;
+			}
+			 else if (board[sourceRow][col] != EMPTY) {
 				return 0;
 			}
-			else if (board[sourceRow][col] != EMPTY && board[sourceRow][col] != THRONE && board[sourceRow][sourceCol] == KING) {
+			/*else if (board[sourceRow][col] != EMPTY && board[sourceRow][col] != THRONE && board[sourceRow][sourceCol] == KING) {
 				return 0;
-			}
+			}*/
 		}
 	}
 	else if (sourceCol == destinationCol) {
 		int end = sourceRow < destinationRow ? destinationRow : sourceRow;
 		int start = sourceRow < destinationRow ? sourceRow + 1 : destinationRow + 1;
 		for (int row = start; row < end; row++) {
-			if (board[row][sourceCol] != EMPTY && board[sourceRow][sourceCol] != KING) {
+			if (board[sourceRow][sourceCol] == KING && board[row][sourceCol] == THRONE) {
+				continue;
+			}
+			else if (board[row][sourceCol] != EMPTY) {
 				return 0;
 			}
-			else if (board[row][sourceCol] != THRONE && board[row][sourceCol] != EMPTY && board[sourceRow][sourceCol] == KING) {
+			/*else if (board[row][sourceCol] != THRONE && board[row][sourceCol] != EMPTY && board[sourceRow][sourceCol] == KING) {
 				return 0;
-			}
+			}*/
 		}
+	}
+
+
+	if (board[sourceRow][sourceCol] == KING && board[destinationRow][destinationCol] == THRONE) {
+		return 1;
+	}
+	else if (board[destinationRow][destinationCol] != EMPTY) {
+		return 0;
 	}
 
 	board[destinationRow][destinationCol] = board[sourceRow][sourceCol];
 	board[sourceRow][sourceCol] = EMPTY;
 
-	int center = boardSize / 2;
-	if (board[center][center] != KING) {
-		board[center][center] = THRONE;
-	}
+
 
 
 	return 1;
@@ -326,57 +329,82 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 void captureFigure(char** board, int row, int col, int& caughtAttackers, int& caughtDefenders, int boardSize) {
 
 	row--;
-	if (row <= 0 || row >= boardSize - 1) {
+	if (row <= 0 || row >= boardSize) {
 		return;
 	}
 
-	if (col <= 0 || col >= boardSize - 1) {
+	if (col <= 0 || col >= boardSize) {
 		return;
 	}
 
-	char ch = board[row][col];
-	char opposite = (ch == DEFENDER || ch == KING) ? ATTACKER : DEFENDER;
+	char figure = board[row][col];
+	if (figure == EMPTY) {
+		return;
+	}
+	char opposite = (figure == DEFENDER || figure == KING) ? ATTACKER : DEFENDER;
 
 	int center = boardSize / 2;
 
-	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} }; // Up, Down, Left, Right
-	int captures = 0;
-	int capturesKing = 0;
+	
+	bool captured = isSurrounded(board, boardSize, row, col, opposite);
 
-	for (int i = 0; i < 4; i+=2) {
-		int nx1 = row + directions[i][0];
-		int ny1 = col + directions[i][1];
-		int nx2 = row + directions[i+1][0];
-		int ny2 = col + directions[i+1][1];
 
-		//char oppositesAttacker[3] = { DEFENDER, KING, THRONE };
 
-		if (board[nx1][ny1] != ch && board[nx1][ny1] != EMPTY && board[nx2][ny2] != ch && board[nx2][ny2] != EMPTY && ch != KING && ch != EMPTY) {
-			captures++;
-		}
-		else if (ch == KING && board[nx1][ny1] == ATTACKER && board[nx2][ny2] == ATTACKER) {
-			capturesKing++;
-		}
-
-	}
-
-	if (capturesKing == 2 && ch == KING) {
+	if (figure == KING && isKingCaptured(board, boardSize, row, col)) {
 		cout << "Game ended! First player wins the game" << endl;
 		return;
 	}
-	else if (captures == 1) {
+	else if (captured) {
 		board[row][col] = EMPTY;
-		ch == DEFENDER ? caughtDefenders++ : caughtAttackers++;
+		figure == DEFENDER ? caughtDefenders++ : caughtAttackers++;
 		cout << endl;
-		cout << "captured figure!" << " (" << ch << ")" << endl;
+		cout << "captured figure!" << " (" << figure << ")" << endl;
 	}
 
 }
-//
-//bool isCaptured(char** board, int row, int col, int boardSize) {
-//	return true;
-//}
 
+bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
+	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} }; 
+
+	int center = boardSize / 2;
+
+
+	for (int i = 0; i < 4; i += 2) { 
+		int nx1 = x + directions[i][0], ny1 = y + directions[i][1];
+		int nx2 = x + directions[i + 1][0], ny2 = y + directions[i + 1][1];
+
+		bool side1 = (nx1 >= 0 && nx1 < boardSize && ny1 >= 0 && ny1 < boardSize) &&
+			(board[nx1][ny1] == target || board[nx1][ny1] == THRONE || board[nx1][ny1] == EDGE || (center == nx1 && center == ny1 && board[nx1][ny1] == KING) );
+		bool side2 = (nx2 >= 0 && nx2 < boardSize && ny2 >= 0 && ny2 < boardSize) &&
+			(board[nx2][ny2] == target || board[nx2][ny2] == THRONE || board[nx2][ny2] == EDGE || (center == nx2 && center == ny2 && board[nx2][ny2] == KING));
+
+		if (side1 && side2) {
+			return true; 
+		}
+	}
+
+	return false;
+}
+
+bool isKingCaptured(char** board, int boardSize, int x, int y) {
+	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} }; 
+	int captureCount = 0;
+
+	for (int i = 0; i < 4; ++i) {
+		int nx = x + directions[i][0], ny = y + directions[i][1];
+
+		if (nx >= 0 && nx < boardSize && ny >= 0 && ny < boardSize) {
+			if (board[nx][ny] == ATTACKER || board[nx][ny] == THRONE) {
+				++captureCount;
+			}
+		}
+		else {
+			++captureCount;
+		}
+	}
+
+	return captureCount == 4;
+}
 
 bool isInBoard(int row, int col, int boardSize) {
 	row--;
