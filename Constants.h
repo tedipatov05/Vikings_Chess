@@ -15,3 +15,6 @@ const char INFO_COMAND[] = "info";
 const char QUIT_COMAND[] = "quit";
 const char HELP_COMMAND[] = "help";
 
+const int DIRECTIONS_ROWS = 4;
+const int DIRECTIONS_COLS = 2;
+
