@@ -1,10 +1,7 @@
 
-
 #include <iostream>
 #include "Constants.h"
 #include "StringUtils.h"
-
-
 using namespace std;
 
 void runGame();
@@ -43,9 +40,6 @@ void runGame() {
 	} while (option != 1 && option != 2);
 
 
-
-	//cout << option;
-
 	if (option == 1) {
 		startGame();
 	}
@@ -74,6 +68,9 @@ void startGame() {
 
 	cin.ignore();
 
+	char* playerOneLastMove = new char[INPUT_MAX_SIZE];;
+	char* playerTwoLastMove = new char[INPUT_MAX_SIZE];
+
 
 	while (true) {
 
@@ -96,10 +93,24 @@ void startGame() {
 
 		char** splitWords = splitStringBySpace(input, wordsCount);
 
-		delete[] input;
+		/*if (areEqualStrings(toLower(splitWords[0]), MOVE_COMMAND)) {
+
+			if (playerMove % 2 == 0) {
+				cout << "Fist player last move: ";
+				cout << playerOneLastMove << endl;
+
+			}
+			if (playerMove % 2 == 1) {
+				cout << "Second player last move: ";
+				cout << playerTwoLastMove << endl;
+			}
+		}*/
 
 
-		if (areEqualStrings(toLower(splitWords[0]), MOVE_COMAND)) {
+
+
+
+		if (areEqualStrings(toLower(splitWords[0]), MOVE_COMMAND)) {
 
 			int sourceRow = charToDigit(splitWords[1]);
 			int sourceCol = charToDigit(splitWords[2]);
@@ -112,6 +123,9 @@ void startGame() {
 				cout << "Invalid move!" << endl;
 				continue;
 			}
+
+			playerMove % 2 == 0 ? copyString(playerOneLastMove, input) : copyString(playerTwoLastMove, input);
+
 
 			char currentCh = board[destinationRow][destinationCol];
 			int directions[DIRECTIONS_ROWS][DIRECTIONS_COLS] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
@@ -136,28 +150,70 @@ void startGame() {
 				return;
 			}
 		}
-		else if (areEqualStrings(toLower(splitWords[0]), INFO_COMAND)) {
+		else if (areEqualStrings(toLower(splitWords[0]), INFO_COMMAND)) {
+
 			cout << "Information" << endl;
 			cout << "Captured attackers: " << caughtAttackers << endl;
 			cout << "Captured defenders: " << caughtDefenders << endl;
+			continue;
 
 		}
-		else if (areEqualStrings(toLower(splitWords[0]), QUIT_COMAND)) {
+		else if (areEqualStrings(toLower(splitWords[0]), QUIT_COMMAND)) {
+
 			const char* output = (playerMove % 2) != 0 ? "First" : "Second";
 
 			cout << output << " player wins the game" << endl;
 			break;
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), HELP_COMMAND)) {
+
 			cout << endl;
 			cout << "Possible moves: move, info, quit, help" << endl;
 			continue;
+		}
+		else if (areEqualStrings(toLower(splitWords[0]), BACK_COMMAND)) {
+			//int wordsCount = 0;
+
+			char* lastMove = new char[INPUT_MAX_SIZE];
+
+			playerMove % 2 == 0 ? copyString(lastMove, playerOneLastMove) : copyString(lastMove, playerTwoLastMove);
+
+			int words = 0;
+
+			char** splitLastMove = splitStringBySpace(lastMove, wordsCount);
+
+			if (!areEqualStrings(splitLastMove[0], MOVE_COMMAND)) {
+				cout << "Make a move first!" << endl;
+				continue;
+			}
+
+			int destinationRow = charToDigit(splitLastMove[1]);
+			int destinationCol = charToDigit(splitLastMove[2]);
+			int sourceRow = charToDigit(splitLastMove[3]);
+			int sourceCol = charToDigit(splitLastMove[4]);
+
+			destinationRow--;
+			sourceRow--;
+
+
+			board[destinationRow][destinationCol] = board[sourceRow][sourceCol];
+			board[sourceRow][sourceCol] = EMPTY;
+
+			//int result = makeMove(sourceRow, sourceCol, destinationRow, destinationCol, board, boardSize, playerMove);
+			//if (!result) {
+			//	cout << "Invalid move!" << endl;
+			//	continue;
+			//}
+			
+			displayBoard(board, boardSize);
+
 		}
 		else {
 			cout << "Invalid command!" << endl;
 			continue;
 		}
 
+		delete[] input;
 
 		playerMove++;
 
@@ -285,12 +341,10 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 			if (board[sourceRow][sourceCol] == KING && board[sourceRow][col] == THRONE) {
 				continue;
 			}
-			 else if (board[sourceRow][col] != EMPTY) {
+			else if (board[sourceRow][col] != EMPTY) {
 				return 0;
 			}
-			/*else if (board[sourceRow][col] != EMPTY && board[sourceRow][col] != THRONE && board[sourceRow][sourceCol] == KING) {
-				return 0;
-			}*/
+
 		}
 	}
 	else if (sourceCol == destinationCol) {
@@ -303,9 +357,7 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 			else if (board[row][sourceCol] != EMPTY) {
 				return 0;
 			}
-			/*else if (board[row][sourceCol] != THRONE && board[row][sourceCol] != EMPTY && board[sourceRow][sourceCol] == KING) {
-				return 0;
-			}*/
+
 		}
 	}
 
@@ -345,7 +397,7 @@ void captureFigure(char** board, int row, int col, int& caughtAttackers, int& ca
 
 	int center = boardSize / 2;
 
-	
+
 	bool captured = isSurrounded(board, boardSize, row, col, opposite);
 
 
@@ -364,22 +416,22 @@ void captureFigure(char** board, int row, int col, int& caughtAttackers, int& ca
 }
 
 bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
-	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} }; 
+	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 
 	int center = boardSize / 2;
 
 
-	for (int i = 0; i < 4; i += 2) { 
+	for (int i = 0; i < 4; i += 2) {
 		int nx1 = x + directions[i][0], ny1 = y + directions[i][1];
 		int nx2 = x + directions[i + 1][0], ny2 = y + directions[i + 1][1];
 
 		bool side1 = (nx1 >= 0 && nx1 < boardSize && ny1 >= 0 && ny1 < boardSize) &&
-			(board[nx1][ny1] == target || board[nx1][ny1] == THRONE || board[nx1][ny1] == EDGE || (center == nx1 && center == ny1 && board[nx1][ny1] == KING) );
+			(board[nx1][ny1] == target || board[nx1][ny1] == THRONE || board[nx1][ny1] == EDGE || (center == nx1 && center == ny1 && board[nx1][ny1] == KING));
 		bool side2 = (nx2 >= 0 && nx2 < boardSize && ny2 >= 0 && ny2 < boardSize) &&
 			(board[nx2][ny2] == target || board[nx2][ny2] == THRONE || board[nx2][ny2] == EDGE || (center == nx2 && center == ny2 && board[nx2][ny2] == KING));
 
 		if (side1 && side2) {
-			return true; 
+			return true;
 		}
 	}
 
@@ -387,7 +439,7 @@ bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 }
 
 bool isKingCaptured(char** board, int boardSize, int x, int y) {
-	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} }; 
+	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 	int captureCount = 0;
 
 	for (int i = 0; i < 4; ++i) {

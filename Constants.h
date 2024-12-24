@@ -10,10 +10,11 @@ const char DEFENDER = 'D'; // Defender piece
 const char EDGE = 'X';     // Edge of the board
 const char THRONE = 'T';
 
-const char MOVE_COMAND[] = "move";
-const char INFO_COMAND[] = "info";
-const char QUIT_COMAND[] = "quit";
+const char MOVE_COMMAND[] = "move";
+const char INFO_COMMAND[] = "info";
+const char QUIT_COMMAND[] = "quit";
 const char HELP_COMMAND[] = "help";
+const char BACK_COMMAND[] = "back";
 
 const int DIRECTIONS_ROWS = 4;
 const int DIRECTIONS_COLS = 2;
