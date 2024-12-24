@@ -6,5 +6,9 @@ void copyString(char* dest, const char* src);
 size_t strLen(const char* str);
 char* toLower(const char* str);
 char toLowerChar(const char ch);
+char* integersToChar(int row, int col);
+char digitToChar(int digit);
+void concatenateString(char* dest, const char* src);
 
 int charToDigit(const char * ch);
+char* intToString(int num);

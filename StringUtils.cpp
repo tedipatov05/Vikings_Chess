@@ -23,6 +23,9 @@ void copyString(char* dest, const char* src) {
 char** splitStringBySpace(const char* str, int& wordCount) {
 	wordCount = 0;
 
+	if (!str) {
+		return nullptr;
+	}
 	
 	const char* ptr = str;
 	while (*ptr) {
@@ -186,6 +189,82 @@ int charToDigit(const char* ch) {
 
 
 	return result;
+}
+char* intToString(int num) {
+	int temp = num, length = 0;
+
+	
+	if (num == 0) {
+		char* str = new char[2];
+		str[0] = '0';
+		str[1] = TERMINATE_SYMBOL;
+		return str;
+	}
+
+	while (temp > 0) {
+		length++;
+		temp /= 10;
+	}
+
+	char* str = new char[length + 1];
+	str[length] = TERMINATE_SYMBOL;  
+
+	while (num > 0) {
+		str[--length] = (num % 10) + '0';
+		num /= 10;
+	}
+
+	return str;
+}
+
+char* integersToChar(int num1, int num2) {
+	char* str1 = intToString(num1);
+	char* str2 = intToString(num2);
+
+	int length1 = 0;
+	while (str1[length1] != TERMINATE_SYMBOL) {
+		length1++;
+	}
+
+	int length2 = 0;
+	while (str2[length2] != TERMINATE_SYMBOL) {
+		length2++;
+	}
+
+	char* result = new char[length1 + length2 + 2]; 
+
+	for (int i = 0; i < length1; i++) {
+		result[i] = str1[i];
+	}
+
+	result[length1] = ' ';
+
+	for (int i = 0; i < length2; i++) {
+		result[length1 + 1 + i] = str2[i];
+	}
+
+	result[length1 + length2 + 1] = TERMINATE_SYMBOL;
+
+	delete[] str1;
+	delete[] str2;
+
+	return result;
+}
+
+char digitToChar(int digit) {
+	if (digit >= 0 && digit <= 9) {
+		return '0' + digit;
+	}
+	return TERMINATE_SYMBOL;
+}
+
+void concatenateString(char* dest, const char* src) {
+	size_t len = strLen(dest);
+	dest += len;
+	*dest = SPACE;
+	dest++;
+
+	copyString(dest, src);
 }
 
 
