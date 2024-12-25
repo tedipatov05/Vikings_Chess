@@ -18,7 +18,7 @@ void captureFigure(char** board, int lastRow, int lastCol, int& caughtAttackers,
 bool isGameOver(char** board, int boardSize);
 bool isSurrounded(char** board, int boardSize, int x, int y, char target);
 bool isKingCaptured(char** board, int boardSize, int x, int y);
-int backMove(char** board, char* lastMove, char** history, int movesCount);
+int backMove(char** board, char** lastMove, char** history, int movesCount);
 
 
 
@@ -121,7 +121,7 @@ void startGame() {
 				captureFigure(board, destinationRow + row, destinationCol + col, caughtAttackers, caughtDefenders, boardSize, history[moveCount]);
 			}
 
-			
+
 
 			int center = boardSize / 2;
 			if (board[center][center] != KING) {
@@ -160,21 +160,17 @@ void startGame() {
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), BACK_COMMAND)) {
 
-			char* lastMove = new char[INPUT_MAX_SIZE];
+			char** lastMove = new char* [2];
+			lastMove[0] = new char[INPUT_MAX_SIZE];
+			lastMove[1] = new char[INPUT_MAX_SIZE];
 
-			if (moveCount % 2 == 0 && *playerOneLastMove != TERMINATE_SYMBOL ) {
-				copyString(lastMove, playerOneLastMove);
-				*playerOneLastMove = TERMINATE_SYMBOL;
-			}
-			else if(moveCount % 2 == 1 && *playerTwoLastMove != TERMINATE_SYMBOL) {
-				copyString(lastMove, playerTwoLastMove);
-				*playerTwoLastMove = TERMINATE_SYMBOL;
-			}
-			else {
-				cout << "Make a move first" << endl;
-				continue;
-			}
-			
+
+			copyString(lastMove[0], playerOneLastMove);
+			*playerOneLastMove = TERMINATE_SYMBOL;
+
+			copyString(lastMove[1], playerTwoLastMove);
+			*playerTwoLastMove = TERMINATE_SYMBOL;
+
 			
 			int result = backMove(board, lastMove, history, moveCount);
 			if (result == 0) {
@@ -355,32 +351,71 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 	return 1;
 }
 
-int backMove(char** board, char* lastMove, char** history, int movesCount) {
+int backMove(char** board, char** lastMove, char** history, int movesCount) {
 
 	int words = 0;
 
-	char** splitLastMove = splitStringBySpace(lastMove, words);
-	
-	if (!areEqualStrings(splitLastMove[0], MOVE_COMMAND)) {
+	char** splitLastMove = splitStringBySpace(lastMove[movesCount % 2], words);
+
+	int w2 = 0;
+	char** history2Split = splitStringBySpace(history[movesCount - 1], w2);
+
+	if (!splitLastMove || !areEqualStrings(splitLastMove[0], MOVE_COMMAND)) {
 		cout << "Make a move first!" << endl;
 		return 0;
 	}
+	char current = movesCount % 2 == 0 ? ATTACKER : DEFENDER;
+	char opposite = (current == DEFENDER || current == KING) ? ATTACKER : DEFENDER;
 
-	int destinationRow = charToDigit(splitLastMove[1]);
-	int destinationCol = charToDigit(splitLastMove[2]);
-	int sourceRow = charToDigit(splitLastMove[3]);
-	int sourceCol = charToDigit(splitLastMove[4]);
 
-	destinationRow--;
-	sourceRow--;
+	if (!history2Split) {
+		int destinationRow = charToDigit(splitLastMove[1]);
+		int destinationCol = charToDigit(splitLastMove[2]);
+		int sourceRow = charToDigit(splitLastMove[3]);
+		int sourceCol = charToDigit(splitLastMove[4]);
 
-	char opposite = (board[sourceRow][sourceCol] == DEFENDER || board[sourceRow][sourceCol] == KING) ? ATTACKER : DEFENDER;
+		destinationRow--;
+		sourceRow--;
+		
+		board[destinationRow][destinationCol] = current;
+		board[sourceRow][sourceCol] = EMPTY;
 
-	board[destinationRow][destinationCol] = board[sourceRow][sourceCol];
-	board[sourceRow][sourceCol] = EMPTY;
+	}
 
+	
 	int w = 0;
 	char** historySplit = splitStringBySpace(history[movesCount - 2], w);
+
+	
+
+	if (history2Split) {
+		for (int j = 0; j < w2; j += 2) {
+			int row = charToDigit(history2Split[j]);
+			int col = charToDigit(history2Split[j + 1]);
+
+			//if(row == destinationRow || col == destinationCol)
+			board[row][col] = current;
+
+		}
+
+		int res = (movesCount - 1) % 2;
+		//cout << lastMove[res] << " ";
+		int wordsLastMove = 0;
+		char** lastMovePreviousSplit = splitStringBySpace(lastMove[res], wordsLastMove);
+
+		int destinationRow2 = charToDigit(lastMovePreviousSplit[1]);
+		int destinationCol2 = charToDigit(lastMovePreviousSplit[2]);
+		int sourceRow2 = charToDigit(lastMovePreviousSplit[3]);
+		int sourceCol2 = charToDigit(lastMovePreviousSplit[4]);
+
+		destinationRow2--;
+		sourceRow2--;
+		board[destinationRow2][destinationCol2] = opposite;
+		board[sourceRow2][sourceCol2] = EMPTY;
+		
+	}
+
+
 
 	if (historySplit) {
 		for (int i = 0; i < w; i += 2) {
