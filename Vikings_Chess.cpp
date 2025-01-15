@@ -4,6 +4,13 @@
 #include "StringUtils.h"
 using namespace std;
 
+struct Tafl {
+	int move = 0;
+	char** board = nullptr;
+	Tafl* prev = nullptr;
+	Tafl* next = nullptr;
+};
+
 void runGame();
 void startGame();
 void quitGame();
@@ -11,15 +18,16 @@ char** initializeBoard(int boardSize);
 void displayBoard(char** board, int boardSize);
 void placeAttackers(char** board, int boardSize);
 void placeDefenders(char** board, int boardSize);
-int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player);
+int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player, bool& isEnded);
 bool isInBoard(int row, int col, int boardSize);
-void captureFigure(char** board, int lastRow, int lastCol, int& caughtAttackers, int& caughtDefenders, int boardSize, char*& history);
+void captureFigure(char** board, int lastRow, int lastCol, int& caughtAttackers, int& caughtDefenders, int boardSize, bool& isEnded);
 
+void copyBoard(char** board, char** destination, int size);
+void insertAtEnd(Tafl*& head, char** board, int moveCount);
 bool isGameOver(char** board, int boardSize);
 bool isSurrounded(char** board, int boardSize, int x, int y, char target);
-bool isKingCaptured(char** board, int boardSize, int x, int y);
-int backMove(char** board, char** lastMove, char** history, int movesCount);
-void executeLastMove(char** board, char** splitLastMove, char curr);
+bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded);
+void deleteAtEnd(Tafl*& head, int boardSize);
 
 
 
@@ -59,8 +67,12 @@ void startGame() {
 		cin >> boardSize;
 	} while (boardSize != 9 && boardSize != 11 && boardSize != 13);
 
+	Tafl* tafl = new Tafl();
+	tafl->board = initializeBoard(boardSize);
+
 	char** board = initializeBoard(boardSize);
-	displayBoard(board, boardSize);
+
+	displayBoard(tafl->board, boardSize);
 
 	char* input = nullptr;
 	int moveCount = 0;
@@ -70,11 +82,22 @@ void startGame() {
 
 	cin.ignore();
 
-	char* playerOneLastMove = new char[INPUT_MAX_SIZE] {TERMINATE_SYMBOL};
-	char* playerTwoLastMove = new char[INPUT_MAX_SIZE] {TERMINATE_SYMBOL};
-	char** history = new char* [CAPTURED_FIGURES_MAX_SIZE];
+	bool isEnded = false;
+	Tafl* newTafl = nullptr;
+
+	char** boardCopy = new char* [boardSize];
+	for (int i = 0; i < boardSize; i++)
+	{
+		boardCopy[i] = new char[boardSize];
+	}
+
+	copyBoard(board, boardCopy, boardSize);
+
+	insertAtEnd(newTafl, boardCopy, moveCount);
+	newTafl->move = moveCount;
 
 	while (true) {
+		
 
 		if (moveCount % 2 == 0) {
 			cout << "First player move! (Attackers)" << endl;
@@ -95,7 +118,6 @@ void startGame() {
 
 		char** splitWords = splitStringBySpace(input, wordsCount);
 
-		history[moveCount] = new char[CAPTURED_FIGURES_MAX_SIZE] {'\0'};
 
 		if (areEqualStrings(toLower(splitWords[0]), MOVE_COMMAND)) {
 
@@ -105,13 +127,12 @@ void startGame() {
 			int destinationCol = charToDigit(splitWords[4]);
 
 
-			int result = makeMove(sourceRow, sourceCol, destinationRow, destinationCol, board, boardSize, moveCount);
+			int result = makeMove(sourceRow, sourceCol, destinationRow, destinationCol, board, boardSize, moveCount, isEnded);
 			if (!result) {
 				cout << "Invalid move!" << endl;
 				continue;
 			}
 
-			moveCount % 2 == 0 ? copyString(playerOneLastMove, input) : copyString(playerTwoLastMove, input);
 
 			char currentCh = board[destinationRow - 1][destinationCol];
 			int directions[DIRECTIONS_ROWS][DIRECTIONS_COLS] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
@@ -119,9 +140,28 @@ void startGame() {
 				int row = directions[i][0];
 				int col = directions[i][1];
 
-				captureFigure(board, destinationRow + row, destinationCol + col, caughtAttackers, caughtDefenders, boardSize, history[moveCount]);
+
+				if (isInBoard(destinationRow + row, destinationCol + col, boardSize))
+				{
+					if (currentCh == KING && board[destinationRow + row - 1][destinationCol + col] == DEFENDER)
+					{
+						//isCapturedLastMove = false;
+						continue;
+					}
+				}
+
+
+				captureFigure(board, destinationRow + row, destinationCol + col, caughtAttackers, caughtDefenders, boardSize, isEnded);
 			}
 
+
+			bool isOver = isGameOver(board, boardSize);
+			if (isOver) {
+				cout << endl;
+				cout << "Second PLayer wins the game!" << endl;
+				displayBoard(board, boardSize);
+				return;
+			}
 
 
 			int center = boardSize / 2;
@@ -129,14 +169,31 @@ void startGame() {
 				board[center][center] = THRONE;
 			}
 
-			displayBoard(board, boardSize);
-
-			bool isOver = isGameOver(board, boardSize);
-			if (isOver) {
-				cout << endl;
-				cout << "Second PLayer wins the game!" << endl;
+			if (isEnded) {
 				return;
 			}
+
+			char** res = new char* [boardSize];
+			for (int i = 0; i < boardSize; i++)
+			{
+				res[i] = new char[boardSize];
+			}
+
+			copyBoard(board, res, boardSize);
+
+			insertAtEnd(newTafl, res, moveCount);
+
+			Tafl* copy = newTafl;
+			while (copy -> next != nullptr)
+			{
+				copy = copy->next;
+			}
+
+			displayBoard(copy->board, boardSize);
+
+
+			
+
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), INFO_COMMAND)) {
 
@@ -161,25 +218,20 @@ void startGame() {
 		}
 		else if (areEqualStrings(toLower(splitWords[0]), BACK_COMMAND)) {
 
-			char** lastMove = new char* [2];
-			lastMove[0] = new char[INPUT_MAX_SIZE];
-			lastMove[1] = new char[INPUT_MAX_SIZE];
+			deleteAtEnd(newTafl, boardSize);
 
-
-			copyString(lastMove[0], playerOneLastMove);
-			*playerOneLastMove = TERMINATE_SYMBOL;
-
-			copyString(lastMove[1], playerTwoLastMove);
-			*playerTwoLastMove = TERMINATE_SYMBOL;
-
-			
-			int result = backMove(board, lastMove, history, moveCount);
-			if (result == 0) {
-				cout << "Invalid command" << endl;
-				continue;
+			Tafl* copy = newTafl;
+			while (copy->next != nullptr)
+			{
+				copy = copy->next;
 			}
 
-			displayBoard(board, boardSize);
+			displayBoard(copy->board, boardSize);
+
+			copyBoard(copy->board, board, boardSize);
+
+			//board = copy->board;
+
 
 		}
 		else {
@@ -194,6 +246,74 @@ void startGame() {
 
 	}
 
+}
+
+void copyBoard(char** board, char** destination, int size){
+
+	for (int r = 0; r < size; r++)
+	{
+		for (int c = 0; c < size; c++)
+		{
+			destination[r][c] = board[r][c];
+		}
+	}
+
+}
+
+
+void insertAtEnd(Tafl*& head, char** board, int moveCount)
+{
+	
+	Tafl* newTafl = new Tafl();
+	newTafl->board = board;
+
+	if (head == nullptr) {
+		head = newTafl;
+		return;
+	}
+
+	Tafl* temp = head;
+	while (temp->next != nullptr) {
+		temp = temp->next;
+	}
+
+	
+	temp->next = newTafl;
+	newTafl->prev = temp;
+	newTafl->move = moveCount;
+}
+
+void deleteAtEnd(Tafl*& head, int boardSize)
+{
+	if (head == nullptr) {
+		cout << "The list is already empty." << endl;
+		return;
+	}
+
+	Tafl* temp = head;
+
+	if (temp->next == nullptr) {
+		head = nullptr;
+		delete temp;
+		return;
+	}
+
+	while (temp->next != nullptr) {
+		temp = temp->next;
+	}
+
+	
+	temp->prev->next = nullptr;
+
+	for (int i = 0; i < boardSize; i++)
+	{
+		delete[] temp->board[i];
+	}
+
+	delete[] temp->board;
+
+
+	delete temp;
 }
 
 void placeAttackers(char** board, int boardSize) {
@@ -228,11 +348,14 @@ void placeDefenders(char** board, int boardSize) {
 		board[center][center + 2] = DEFENDER;
 	}
 
+	int cordX[] = { -1,-1,1,1 };
+	int cordY[] = { -1, 1, -1, 1 };
 
-	board[center - 1][center - 1] = DEFENDER;
-	board[center - 1][center + 1] = DEFENDER;
-	board[center + 1][center - 1] = DEFENDER;
-	board[center + 1][center + 1] = DEFENDER;
+	for (int i = 0; i < 4; i++) {
+		board[center + cordX[i]][center + cordY[i]] = DEFENDER;
+	}
+
+
 }
 
 char** initializeBoard(int boardSize) {
@@ -285,7 +408,7 @@ void quitGame() {
 	return;
 }
 
-int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player) {
+int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player, bool& isEnded) {
 
 	if (!isInBoard(sourceRow, sourceCol, boardSize)) {
 		return 0;
@@ -325,6 +448,12 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 		int end = sourceRow < destinationRow ? destinationRow : sourceRow;
 		int start = sourceRow < destinationRow ? sourceRow + 1 : destinationRow + 1;
 		for (int row = start; row < end; row++) {
+
+			if (board[sourceRow][sourceCol] == KING && board[row][sourceCol] == EDGE)
+			{
+				continue;
+			}
+
 			if (board[sourceRow][sourceCol] == KING && board[row][sourceCol] == THRONE) {
 				continue;
 			}
@@ -339,10 +468,14 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 	if (board[sourceRow][sourceCol] == KING && board[destinationRow][destinationCol] == THRONE) {
 		return 1;
 	}
+	else if (board[sourceRow][sourceCol] == KING && board[destinationRow][destinationCol] == EDGE) {
+		isEnded = true;
+	}
 	else if (board[destinationRow][destinationCol] != EMPTY) {
 		return 0;
 	}
 
+	//lastMovedFigure = board[sourceRow][sourceCol];
 	board[destinationRow][destinationCol] = board[sourceRow][sourceCol];
 	board[sourceRow][sourceCol] = EMPTY;
 
@@ -352,83 +485,7 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 	return 1;
 }
 
-int backMove(char** board, char** lastMove, char** history, int movesCount) {
-
-	int words = 0;
-
-	char** splitLastMove = splitStringBySpace(lastMove[movesCount % 2], words);
-
-	int w2 = 0;
-	char** history2Split = splitStringBySpace(history[movesCount - 1], w2);
-
-	if (!splitLastMove || !areEqualStrings(splitLastMove[0], MOVE_COMMAND)) {
-		cout << "Make a move first!" << endl;
-		return 0;
-	}
-	char current = movesCount % 2 == 0 ? ATTACKER : DEFENDER;
-	char opposite = (current == DEFENDER || current == KING) ? ATTACKER : DEFENDER;
-
-
-	if (!history2Split) {
-		
-		executeLastMove(board, splitLastMove, current);
-
-	}
-
-	
-	int w = 0;
-	char** historySplit = splitStringBySpace(history[movesCount - 2], w);
-
-	
-
-	if (history2Split) {
-		for (int j = 0; j < w2; j += 2) {
-			int row = charToDigit(history2Split[j]);
-			int col = charToDigit(history2Split[j + 1]);
-
-			
-			board[row][col] = current;
-
-		}
-
-		int res = (movesCount - 1) % 2;
-
-		int wordsLastMove = 0;
-		char** lastMovePreviousSplit = splitStringBySpace(lastMove[res], wordsLastMove);
-
-		executeLastMove(board, lastMovePreviousSplit, opposite);
-		
-	}
-
-
-
-	if (historySplit) {
-		for (int i = 0; i < w; i += 2) {
-			int row = charToDigit(historySplit[i]);
-			int col = charToDigit(historySplit[i + 1]);
-
-			board[row][col] = opposite;
-		}
-	}
-
-	return 1;
-}
-
-void executeLastMove(char** board, char** splitLastMove, char curr) {
-
-	int destinationRow = charToDigit(splitLastMove[1]);
-	int destinationCol = charToDigit(splitLastMove[2]);
-	int sourceRow = charToDigit(splitLastMove[3]);
-	int sourceCol = charToDigit(splitLastMove[4]);
-
-	destinationRow--;
-	sourceRow--;
-
-	board[destinationRow][destinationCol] = curr;
-	board[sourceRow][sourceCol] = EMPTY;
-}
-
-void captureFigure(char** board, int row, int col, int& caughtAttackers, int& caughtDefenders, int boardSize, char*& history) {
+void captureFigure(char** board, int row, int col, int& caughtAttackers, int& caughtDefenders, int boardSize, bool& isEnded) {
 
 	row--;
 	if (row <= 0 || row >= boardSize) {
@@ -450,16 +507,15 @@ void captureFigure(char** board, int row, int col, int& caughtAttackers, int& ca
 
 	bool captured = isSurrounded(board, boardSize, row, col, opposite);
 
-
-
-	if (figure == KING && isKingCaptured(board, boardSize, row, col)) {
+	if (figure == KING && isKingCaptured(board, boardSize, row, col, isEnded)) {
 		cout << "Game ended! First player wins the game" << endl;
-		return;
+		isEnded = true;
 	}
-	else if (captured) {
+	else if (captured && figure != KING) {
 		board[row][col] = EMPTY;
-		concatenateString(history, integersToChar(row, col));
+		/*concatenateString(history, integersToChar(row, col));*/
 		figure == DEFENDER ? caughtDefenders++ : caughtAttackers++;
+
 		cout << endl;
 		cout << "captured figure!" << " (" << figure << ")" << endl;
 	}
@@ -489,7 +545,7 @@ bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 	return false;
 }
 
-bool isKingCaptured(char** board, int boardSize, int x, int y) {
+bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded) {
 	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 	int captureCount = 0;
 
@@ -501,9 +557,9 @@ bool isKingCaptured(char** board, int boardSize, int x, int y) {
 				++captureCount;
 			}
 		}
-		else {
+		/*else {
 			++captureCount;
-		}
+		}*/
 	}
 
 	return captureCount == 4;
