@@ -2,7 +2,7 @@
 
 /**
  *
- * Solution to course project # 7
+ * Solution to course project #7
  * Introduction to programing course
  * Faculty of Mathematics and Informatics of Sofia University
  * Winter semester 2024/2025
@@ -11,7 +11,7 @@
  * @idnumber 2MI0600491
  * @compiler VC
  *
- * <header file with declaration of string helper function >
+ * <header file with declaration of string helper functions>
  */
 
 char** splitStringBySpace(const char* str, int& wordsCount);

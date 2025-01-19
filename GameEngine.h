@@ -2,7 +2,7 @@
 
 /**
  *
- * Solution to course project # 7
+ * Solution to course project #7
  * Introduction to programing course
  * Faculty of Mathematics and Informatics of Sofia University
  * Winter semester 2024/2025

@@ -3,7 +3,7 @@
 
 /**
  *
- * Solution to course project # 7
+ * Solution to course project #7
  * Introduction to programing course
  * Faculty of Mathematics and Informatics of Sofia University
  * Winter semester 2024/2025
@@ -12,7 +12,7 @@
  * @idnumber 2MI0600491
  * @compiler VC
  *
- * <file with implementation of string helper function >
+ * <file with implementation of string helper functions >
  */
 
 void copyString(char* dest, const char* src) {

@@ -1,5 +1,19 @@
 #pragma once
 
+/**
+ *
+ * Solution to course project #7
+ * Introduction to programing course
+ * Faculty of Mathematics and Informatics of Sofia University
+ * Winter semester 2024/2025
+ *
+ * @author Teodor Patov
+ * @idnumber 2MI0600491
+ * @compiler VC
+ *
+ * <file with constants>
+ */
+
 const int INPUT_MAX_SIZE = 30; // Input max size
 const int CAPTURED_FIGURES_MAX_SIZE = 40;
 const int COORS_MAX_LENGTH = 6;
