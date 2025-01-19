@@ -1,6 +1,20 @@
 #include "StringUtils.h"
 #include "Constants.h"
 
+/**
+ *
+ * Solution to course project # 7
+ * Introduction to programing course
+ * Faculty of Mathematics and Informatics of Sofia University
+ * Winter semester 2024/2025
+ *
+ * @author Teodor Patov
+ * @idnumber 2MI0600491
+ * @compiler VC
+ *
+ * <file with implementation of string helper function >
+ */
+
 void copyString(char* dest, const char* src) {
 	//size_t i = 0;
 	while (*src != TERMINATE_SYMBOL) {
@@ -13,15 +27,8 @@ void copyString(char* dest, const char* src) {
 }
 
 
-/// <summary>
-/// This function takes a string (char*) and return its split by space
-/// </summary>
-/// <param name="str"></param>
-/// <param name="wordCount"></param>
-/// <returns> string split by space</returns>
-
-char** splitStringBySpace(const char* str, int& wordCount) {
-	wordCount = 0;
+char** splitStringBySpace(const char* str, int& wordsCount) {
+	wordsCount = 0;
 
 	if (!str) {
 		return nullptr;
@@ -36,19 +43,19 @@ char** splitStringBySpace(const char* str, int& wordCount) {
 
 		
 		if (*ptr) {
-			++wordCount;
+			++wordsCount;
 			while (*ptr && *ptr != ' ') {
 				++ptr;
 			}
 		}
 	}
 
-	if (wordCount == 0) {
+	if (wordsCount == 0) {
 		return nullptr; 
 	}
 
 
-	char** result = new char* [wordCount + 1];
+	char** result = new char* [wordsCount + 1];
 
 	
 	ptr = str; 
@@ -70,7 +77,7 @@ char** splitStringBySpace(const char* str, int& wordCount) {
 		size_t wordLength = ptr - wordStart;
 
 		
-		if (wordLength > 0 && index < wordCount) {
+		if (wordLength > 0 && index < wordsCount) {
 			result[index] = new char[wordLength + 1]; 
 			for (size_t i = 0; i < wordLength; ++i) {
 				result[index][i] = wordStart[i];
