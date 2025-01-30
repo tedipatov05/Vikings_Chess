@@ -15,6 +15,12 @@
  * <file with implementation of string helper functions >
  */
 
+/// <summary>
+/// Copies the string from src to dest
+/// </summary>
+/// <param name="dest"></param>
+/// <param name="src"></param>
+
 void copyString(char* dest, const char* src) {
 	//size_t i = 0;
 	while (*src != TERMINATE_SYMBOL) {
@@ -26,6 +32,13 @@ void copyString(char* dest, const char* src) {
 	*dest = TERMINATE_SYMBOL;
 }
 
+
+/// <summary>
+/// Split the string by space
+/// </summary>
+/// <param name="str"></param>
+/// <param name="wordsCount"></param>
+/// <returns>return the words in a new array</returns>
 
 char** splitStringBySpace(const char* str, int& wordsCount) {
 	wordsCount = 0;
@@ -90,6 +103,12 @@ char** splitStringBySpace(const char* str, int& wordsCount) {
 	return result;
 }
 
+/// <summary>
+/// Checks if two strings are equal
+/// </summary>
+/// <param name="str1"></param>
+/// <param name="str2"></param>
+/// <returns>bool</returns>
 bool areEqualStrings(const char* str1, const char* str2)
 {
 	if (!str1 || !str2) {
@@ -121,6 +140,12 @@ bool areEqualStrings(const char* str1, const char* str2)
 	return true;
 }
 
+
+/// <summary>
+/// Gets the length of the string
+/// </summary>
+/// <param name="str"></param>
+/// <returns>return length of the string size_t</returns>
 size_t strLen(const char* str)
 {
 	if (!str) {
@@ -137,6 +162,11 @@ size_t strLen(const char* str)
 	return length;
 }
 
+/// <summary>
+/// Returns char to lower case
+/// </summary>
+/// <param name="ch"></param>
+/// <returns>char</returns>
 char toLowerChar(const char ch) {
 	if (ch >= 'A' && ch <= 'Z') {
 		return ch + ('a' - 'A');
@@ -145,6 +175,11 @@ char toLowerChar(const char ch) {
 	return ch;
 }
 
+/// <summary>
+/// Return the whole string to lower case
+/// </summary>
+/// <param name="str"></param>
+/// <returns>char*</returns>
 char* toLower(const char* str) {
 	
 	size_t length = 0;
@@ -169,6 +204,11 @@ char* toLower(const char* str) {
 	return lowerStr;
 }
 
+/// <summary>
+/// Converts char to its ascii value
+/// </summary>
+/// <param name="ch"></param>
+/// <returns>int</returns>
 int charToDigit(const char* ch) {
 
 	if (!ch) {
@@ -197,6 +237,12 @@ int charToDigit(const char* ch) {
 
 	return result;
 }
+
+/// <summary>
+/// Convert number to string
+/// </summary>
+/// <param name="num"></param>
+/// <returns></returns>
 char* intToString(int num) {
 	int temp = num, length = 0;
 
@@ -224,6 +270,14 @@ char* intToString(int num) {
 	return str;
 }
 
+
+
+/// <summary>
+/// Converts all integers to char
+/// </summary>
+/// <param name="num1"></param>
+/// <param name="num2"></param>
+/// <returns>char*</returns>
 char* integersToChar(int num1, int num2) {
 	char* str1 = intToString(num1);
 	char* str2 = intToString(num2);
@@ -258,6 +312,12 @@ char* integersToChar(int num1, int num2) {
 	return result;
 }
 
+/// <summary>
+/// Converts digit to char
+/// </summary>
+/// <param name="digit"></param>
+/// <returns>char</returns>
+
 char digitToChar(int digit) {
 	if (digit >= 0 && digit <= 9) {
 		return '0' + digit;
@@ -265,6 +325,11 @@ char digitToChar(int digit) {
 	return TERMINATE_SYMBOL;
 }
 
+/// <summary>
+/// Concatenates two strings
+/// </summary>
+/// <param name="dest"></param>
+/// <param name="src"></param>
 void concatenateString(char* dest, const char* src) {
 	size_t len = strLen(dest);
 	dest += len;

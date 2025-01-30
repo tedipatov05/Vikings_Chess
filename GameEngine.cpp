@@ -27,6 +27,9 @@ struct Tafl {
 	Tafl* next = nullptr;
 };
 
+/// <summary>
+/// Method that runs the game
+/// </summary>
 void runGame() {
 	cout << "Welcome to Vikings Chess" << endl;
 	cout << "1. Start game" << endl;
@@ -49,6 +52,9 @@ void runGame() {
 
 }
 
+/// <summary>
+/// Function that starts the game and runs the main functionality
+/// </summary>
 void startGame() {
 
 	int boardSize;
@@ -265,6 +271,13 @@ void startGame() {
 
 }
 
+/// <summary>
+/// Function that copies board to destination matrix
+/// </summary>
+/// <param name="board"></param>
+/// <param name="destination"></param>
+/// <param name="size"></param>
+
 void copyBoard(char** board, char** destination, int size) {
 
 	for (int r = 0; r < size; r++)
@@ -277,6 +290,12 @@ void copyBoard(char** board, char** destination, int size) {
 
 }
 
+/// <summary>
+/// Function that frees the memory
+/// </summary>
+/// <param name="head"></param>
+/// <param name="boardSize"></param>
+
 void freeHistory(Tafl*& head, int boardSize) {
 	//Tafl* temp = head;
 	while (head != nullptr) {
@@ -284,6 +303,12 @@ void freeHistory(Tafl*& head, int boardSize) {
 	}
 
 }
+
+/// <summary>
+/// Function that frees the memory of the board
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
 
 void freeMemoryBoard(char** board, int boardSize) {
 	for (int i = 0; i < boardSize; i++)
@@ -293,6 +318,13 @@ void freeMemoryBoard(char** board, int boardSize) {
 	delete[] board;
 }
 
+
+/// <summary>
+/// Function that adds a new element at the end of the linked list
+/// </summary>
+/// <param name="head"></param>
+/// <param name="board"></param>
+/// <param name="moveCount"></param>
 
 void insertAtEnd(Tafl*& head, char** board, int moveCount)
 {
@@ -315,6 +347,12 @@ void insertAtEnd(Tafl*& head, char** board, int moveCount)
 	newTafl->prev = temp;
 	newTafl->move = moveCount;
 }
+
+/// <summary>
+/// Function that removes an element at the end of the linked list
+/// </summary>
+/// <param name="head"></param>
+/// <param name="boardSize"></param>
 
 void deleteAtEnd(Tafl*& head, int boardSize)
 {
@@ -349,6 +387,13 @@ void deleteAtEnd(Tafl*& head, int boardSize)
 	delete temp;
 }
 
+
+/// <summary>
+/// Function that place attackers on the board
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+
 void placeAttackers(char** board, int boardSize) {
 
 	int center = boardSize / 2;
@@ -366,6 +411,12 @@ void placeAttackers(char** board, int boardSize) {
 	board[center][1] = ATTACKER;
 
 }
+
+/// <summary>
+/// Function that place defenders on the board
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
 
 void placeDefenders(char** board, int boardSize) {
 	int center = boardSize / 2;
@@ -390,6 +441,13 @@ void placeDefenders(char** board, int boardSize) {
 
 
 }
+
+
+/// <summary>
+/// Function that initialize board
+/// </summary>
+/// <param name="boardSize"></param>
+/// <returns></returns>
 
 char** initializeBoard(int boardSize) {
 	char** board = new char* [boardSize];
@@ -416,7 +474,11 @@ char** initializeBoard(int boardSize) {
 }
 
 
-
+/// <summary>
+/// Function that displays the board on the console 
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
 void displayBoard(char** board, int boardSize) {
 	for (size_t i = 0; i < boardSize; i++) {
 		for (size_t j = 0; j < boardSize; j++) {
@@ -437,10 +499,27 @@ void displayBoard(char** board, int boardSize) {
 }
 
 
+/// <summary>
+/// Function that quit the game
+/// </summary>
+
 void quitGame() {
 	return;
 }
 
+
+/// <summary>
+/// Function for making a move on the board
+/// </summary>
+/// <param name="sourceRow"></param>
+/// <param name="sourceCol"></param>
+/// <param name="destinationRow"></param>
+/// <param name="destinationCol"></param>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+/// <param name="player"></param>
+/// <param name="isEnded"></param>
+/// <returns></returns>
 int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player, bool& isEnded) {
 
 	if (!isInBoard(sourceRow, sourceCol, boardSize)) {
@@ -518,6 +597,14 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 	return 1;
 }
 
+/// <summary>
+/// Function that captures figure on the board
+/// </summary>
+/// <param name="board"></param>
+/// <param name="row"></param>
+/// <param name="col"></param>
+/// <param name="boardSize"></param>
+/// <param name="isEnded"></param>
 void captureFigure(char** board, int row, int col, int boardSize, bool& isEnded) {
 
 	row--;
@@ -557,6 +644,17 @@ void captureFigure(char** board, int row, int col, int boardSize, bool& isEnded)
 
 }
 
+
+/// <summary>
+/// Function that check if figure is surrounded by opposite figures
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+/// <param name="x"></param>
+/// <param name="y"></param>
+/// <param name="target"></param>
+/// <returns>bool</returns>
+
 bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 
@@ -580,6 +678,17 @@ bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 	return false;
 }
 
+
+/// <summary>
+/// Function that checks if the king is captured
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+/// <param name="x"></param>
+/// <param name="y"></param>
+/// <param name="isEnded"></param>
+/// <returns></returns>
+
 bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded) {
 	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
 	int captureCount = 0;
@@ -598,6 +707,15 @@ bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded) {
 	return captureCount == 4;
 }
 
+
+/// <summary>
+/// Checks if the move is in the board
+/// </summary>
+/// <param name="row"></param>
+/// <param name="col"></param>
+/// <param name="boardSize"></param>
+/// <returns></returns>
+
 bool isInBoard(int row, int col, int boardSize) {
 	row--;
 	if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) {
@@ -607,12 +725,26 @@ bool isInBoard(int row, int col, int boardSize) {
 }
 
 
+/// <summary>
+///  Check if the game is over
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+/// <returns></returns>
 bool isGameOver(char** board, int boardSize) {
 
 	return board[0][0] == KING || board[0][boardSize - 1] == KING
 		|| board[boardSize - 1][0] == KING || board[boardSize - 1][boardSize - 1] == KING;
 }
 
+
+/// <summary>
+/// Function that finds figures on the board
+/// </summary>
+/// <param name="board"></param>
+/// <param name="boardSize"></param>
+/// <param name="currentAttackers"></param>
+/// <param name="currentDefenders"></param>
 void findCapturedFigures(char** board, int boardSize, int& currentAttackers, int& currentDefenders)
 {
 
