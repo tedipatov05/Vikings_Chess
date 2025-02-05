@@ -2,6 +2,7 @@
 #include "Constants.h"
 #include  "GameEngine.h"
 #include <iostream>
+#include <string>
 using namespace std;
 
 
@@ -35,12 +36,29 @@ void runGame() {
 	cout << "1. Start game" << endl;
 	cout << "2. Quit" << endl;
 	int option;
-
+	char input[INPUT_MAX_SIZE];
 
 	do {
-		cout << "Enter your choice: ";
-		cin >> option;
-	} while (option != 1 && option != 2);
+		cout << "Enter your choice (1 or 2): ";
+		cin.getline(input, sizeof(input)); 
+
+		
+		if (strlen(input) == 0) {
+			cout << "Input is empty. Please try again.\n";
+		}
+		else {
+			
+			option = charToDigit(input);
+
+			
+			if (option == 1 || option == 2) {
+				break; 
+			}
+			else {
+				std::cout << "Invalid choice. Please enter 1 or 2.\n";
+			}
+		}
+	} while (true);
 
 
 	if (option == 1) {
@@ -58,10 +76,32 @@ void runGame() {
 void startGame() {
 
 	int boardSize;
+	char boardSizeInput[INPUT_MAX_SIZE];
+
 	do {
 		cout << "Enter valid board size (9, 11 or 13): ";
-		cin >> boardSize;
-	} while (boardSize != 9 && boardSize != 11 && boardSize != 13);
+		cin.getline(boardSizeInput, sizeof(boardSizeInput));
+
+
+		if (strlen(boardSizeInput) == 0) {
+			cout << "Input is empty. Please try again.\n";
+		}
+		else {
+
+			boardSize = charToDigit(boardSizeInput);
+
+
+			if (boardSize == 9 || boardSize == 11 || boardSize == 13) {
+				break;
+			}
+			else {
+				cout << "Invalid choice.";
+			}
+		}
+
+
+		//cin >> boardSize;
+	} while (true);
 
 	Tafl* tafl = new Tafl();
 	tafl->board = initializeBoard(boardSize);
@@ -80,7 +120,7 @@ void startGame() {
 	int currentAttackers = 0;
 	int currentDefenders = 0;
 
-	cin.ignore();
+	//cin.ignore();
 
 	bool isEnded = false;
 	Tafl* newTafl = nullptr;
@@ -118,8 +158,18 @@ void startGame() {
 
 		char** splitWords = splitStringBySpace(input, wordsCount);
 
+		if (!wordsCount){
+			cout << "Please enter a move!" << endl;
+			continue;
+		}
+
 
 		if (areEqualStrings(toLower(splitWords[0]), MOVE_COMMAND)) {
+
+			if (wordsCount != 5){
+				cout << "Invalid move!" << endl;
+				continue;
+			}
 
 			int sourceRow = charToDigit(splitWords[1]);
 			int sourceCol = charToDigit(splitWords[2]);

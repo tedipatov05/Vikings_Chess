@@ -23,6 +23,5 @@ char toLowerChar(const char ch);
 char* integersToChar(int num1, int num2);
 char digitToChar(int digit);
 void concatenateString(char* dest, const char* src);
-
 int charToDigit(const char * ch);
 char* intToString(int num);
