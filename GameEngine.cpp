@@ -658,11 +658,11 @@ int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCo
 void captureFigure(char** board, int row, int col, int boardSize, bool& isEnded) {
 
 	row--;
-	if (row <= 0 || row >= boardSize) {
+	if (row < 0 || row >= boardSize) {
 		return;
 	}
 
-	if (col <= 0 || col >= boardSize) {
+	if (col < 0 || col >= boardSize) {
 		return;
 	}
 
