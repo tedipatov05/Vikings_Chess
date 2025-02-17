@@ -497,7 +497,7 @@ void placeDefenders(char** board, int boardSize) {
 /// Function that initialize board
 /// </summary>
 /// <param name="boardSize"></param>
-/// <returns></returns>
+/// <returns>matrix with initialized board</returns>
 
 char** initializeBoard(int boardSize) {
 	char** board = new char* [boardSize];
@@ -569,7 +569,7 @@ void quitGame() {
 /// <param name="boardSize"></param>
 /// <param name="player"></param>
 /// <param name="isEnded"></param>
-/// <returns></returns>
+/// <returns>if the move is made</returns>
 int makeMove(int sourceRow, int sourceCol, int destinationRow, int destinationCol, char** board, int boardSize, int player, bool& isEnded) {
 
 	if (!isInBoard(sourceRow, sourceCol, boardSize)) {
@@ -703,7 +703,7 @@ void captureFigure(char** board, int row, int col, int boardSize, bool& isEnded)
 /// <param name="x"></param>
 /// <param name="y"></param>
 /// <param name="target"></param>
-/// <returns>bool</returns>
+/// <returns>bool (if the figure(x,y) is surrounded)</returns>
 
 bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
@@ -737,7 +737,7 @@ bool isSurrounded(char** board, int boardSize, int x, int y, char target) {
 /// <param name="x"></param>
 /// <param name="y"></param>
 /// <param name="isEnded"></param>
-/// <returns></returns>
+/// <returns>if the King is captured</returns>
 
 bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded) {
 	int directions[4][2] = { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
@@ -764,7 +764,7 @@ bool isKingCaptured(char** board, int boardSize, int x, int y, bool& isEnded) {
 /// <param name="row"></param>
 /// <param name="col"></param>
 /// <param name="boardSize"></param>
-/// <returns></returns>
+/// <returns>if the coordinates are in the board</returns>
 
 bool isInBoard(int row, int col, int boardSize) {
 	row--;
@@ -780,7 +780,7 @@ bool isInBoard(int row, int col, int boardSize) {
 /// </summary>
 /// <param name="board"></param>
 /// <param name="boardSize"></param>
-/// <returns></returns>
+/// <returns>check if game is over (King is on some of the edges)</returns>
 bool isGameOver(char** board, int boardSize) {
 
 	return board[0][0] == KING || board[0][boardSize - 1] == KING
